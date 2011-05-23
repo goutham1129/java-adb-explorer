@@ -97,7 +97,6 @@ public class ADBCommand {
 			}
 			while((line=errorIn.readLine()) != null) { // When success ADB return success state to std.err !
 				retour += line+"\n";
-				System.err.println(line);
 			}
 		}
 		catch (java.io.IOException e) { log.error(e); }

@@ -51,7 +51,6 @@ public 	class Piper implements java.lang.Runnable {
 			while (read > -1) {
 				// Read bytes into buffer
 				read = input.read(b, 0, b.length);
-				//System.out.println("read: " + new String(b));
 				if (read > -1) {
 					// Write bytes to output
 					output.write(b, 0, read);
