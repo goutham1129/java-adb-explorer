@@ -25,7 +25,8 @@
 package adbexplorer.util;
 
 public class LocalCommand {
-	private ADBLogger log = new ADBLogger(LocalCommand.class);
+	adbexplorer.util.Log4jInit log4jInit = new adbexplorer.util.Log4jInit();
+	private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(LocalCommand.class);
 	
 	private Runtime runtime;
 	

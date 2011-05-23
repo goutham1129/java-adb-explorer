@@ -27,7 +27,8 @@ package adbexplorer.main;
 public class ADBExplorer extends javax.swing.JFrame {
 	
 	private static final long serialVersionUID = 1L; // Auto-generated
-	adbexplorer.util.ADBLogger log = new adbexplorer.util.ADBLogger(ADBExplorer.class);
+	adbexplorer.util.Log4jInit log4jInit = new adbexplorer.util.Log4jInit();
+	private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ADBExplorer.class);
 	
 	/* ADB Command */
 	private adbexplorer.util.ADBCommand adb;
@@ -259,12 +260,13 @@ public class ADBExplorer extends javax.swing.JFrame {
 	}
 
 	/**
-	 * Initialize component Mount System
+	 * Initialize component Mount System developed
 	 */
 	private void initMountSystem() {
 		mountRW.setText("Mount System R/W");
 		mountRW.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				adbexplorer.util.MessageBoxes.ShowMessage("This feature will be developed in futur");
 			}
 		});
 	}
@@ -413,11 +415,11 @@ refreshRemoteList();
 						adbexplorer.util.FileType ft = lit.getFile();
 						String file = (remoteWorkingDir + "/" + obj).replace("//", "/");
 						if(confirm("Delete " + file) == 1) {
-							if(ft.getType() == 0)
+							if(ft.getType() == 1)
 								refreshOutput(adb.rm(file));
-							else if(ft.getType() == 1)
+							else if(ft.getType() == 2)
 								refreshOutput(adb.rmdir(file));
-							else if(ft.getType() == 2) 
+							else if(ft.getType() == 3) 
 								refreshOutput(adb.rm(file));
 						}
 						refreshRemoteList();
@@ -467,11 +469,11 @@ refreshRemoteList();
 					adbexplorer.util.FileType ft = lit.getFile();
 					String file = (remoteWorkingDir + "/" + obj).replace("//", "/");
 					if(confirm("Delete " + file) == 1) {
-						if(ft.getType() == 0)
+						if(ft.getType() == 1)
 							refreshOutput(adb.rm(file));
-						else if(ft.getType() == 1)
+						else if(ft.getType() == 2)
 							refreshOutput(adb.rmdir(file));
-						else if(ft.getType() == 2) 
+						else if(ft.getType() == 3) 
 							refreshOutput(adb.rm(file));
 					}
 					refreshRemoteList();
@@ -712,7 +714,8 @@ refreshRemoteList();
 		
 		log.debug("Double clicked on " + obj.getName() + " and goto "+localWorkingDir);
 		
-		if(obj.getType() > 0) refreshLocalList();
+		if(obj.getType() > 1) refreshLocalList();
+		else if(obj.getType() < 0) refreshOutput("Permission denied !");
 		else refreshOutput("Cannot enter in a file !");
 	}
 	
@@ -767,7 +770,8 @@ refreshRemoteList();
 		
 		log.debug("Double clicked on " + obj.getName() + " and goto "+remoteWorkingDir);
 		
-		if(obj.getType() > 0) refreshRemoteList();
+		if(obj.getType() > 1) refreshRemoteList();
+		else if(obj.getType() < 0) refreshOutput("Permission denied !");
 		else refreshOutput("Cannot enter in a file !");
 	}
 	

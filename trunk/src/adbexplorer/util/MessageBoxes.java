@@ -9,25 +9,25 @@ public class MessageBoxes {
   
   public static void ShowMessage(String text)
   {
-    ShowMessage(text,"Java ADB Explorer");
+    ShowMessage("Java ADB Explorer", text);
   }
  
-  public static void ShowMessage(String title,String text)
+  public static void ShowMessage(String title, String text)
   {
     ShowMessage(title, text, javax.swing.JOptionPane.NO_OPTION);
   }
  
-  public static void ShowError(String title,String text)
+  public static void ShowError(String title, String text)
   {
     ShowMessage(title, text, javax.swing.JOptionPane.ERROR_MESSAGE);
   }
  
-  public static void ShowWarning(String title,String text)
+  public static void ShowWarning(String title, String text)
   {
     ShowMessage(title, text, javax.swing.JOptionPane.WARNING_MESSAGE);
   }
  
-  public static void ShowInfo(String title,String text)
+  public static void ShowInfo(String title, String text)
   {
     ShowMessage(title, text, javax.swing.JOptionPane.INFORMATION_MESSAGE);
   }

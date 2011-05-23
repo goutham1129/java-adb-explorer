@@ -33,7 +33,8 @@ public 	class Piper implements java.lang.Runnable {
 	
 	private java.io.InputStream input;
 	private java.io.OutputStream output;
-	private ADBLogger log = new ADBLogger(Piper.class);
+	adbexplorer.util.Log4jInit log4jInit = new adbexplorer.util.Log4jInit();
+	private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Piper.class);
 
 	
 	public Piper(java.io.InputStream input, java.io.OutputStream output) {

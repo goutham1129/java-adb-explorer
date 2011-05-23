@@ -26,8 +26,9 @@ package adbexplorer.util;
 
 public class ADBCommand {
 	
-	private ADBLogger log = new ADBLogger(ADBCommand.class);
-	
+	adbexplorer.util.Log4jInit log4jInit = new adbexplorer.util.Log4jInit();
+	private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ADBCommand.class);
+
 	private Runtime runtime;
 	private String device;
 	
@@ -64,7 +65,7 @@ public class ADBCommand {
 		String retour="";
 		try {
 			Process p = runtime.exec("adb -s "+device+" shell "+command);
-			log.info("adb -s "+device+" shell "+command);
+			log.debug("adb -s "+device+" shell "+command);
 			
 			java.io.BufferedReader standardIn = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream())); 
 			java.io.BufferedReader errorIn = new java.io.BufferedReader(new java.io.InputStreamReader(p.getErrorStream())); 
@@ -86,7 +87,7 @@ public class ADBCommand {
 		try {
 			cmd = "adb -s " + device + " " + cmd;
 			Process p = runtime.exec(cmd);
-			log.info("adb -s "+device+" shell "+cmd);
+			log.debug("adb -s "+device+" shell "+cmd);
 			
 			java.io.BufferedReader standardIn = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream())); 
 			java.io.BufferedReader errorIn = new java.io.BufferedReader(new java.io.InputStreamReader(p.getErrorStream())); 
@@ -141,11 +142,14 @@ public class ADBCommand {
 			
 			while((line = in.readLine()) != null) {
 				if( obj == null ) obj = new java.util.Vector<adbexplorer.util.FileType>();
-				
 				String [] ligneContent = line.split(" ");
 				String name="", path ="", permissions="";
 				int type=0;
 				if(ligneContent.length >= 5) { // If more than 5 columns
+					
+					// TODO check the permissions of the file and if the user can read the file
+					// Must check the owner, the group and other perm (x x x)
+					// adbexplorer.util.FileType file = new FileType(); int perm = file.permissionToInteger(permissions);
 					
 					
 					name = ligneContent[ligneContent.length - 1];
@@ -155,20 +159,21 @@ public class ADBCommand {
 					
 					// If is directory
 					if(ligneContent[0].substring(0, 1).equals("d")) {
-						type = 1;
+						type = 2;
 					}
 					// If is a symbolic link
 					else if(ligneContent[0].substring(0, 1).equals("l")) {
 						// TODO Check if the symlink link to a file or a directory
-						type = 2;
+						type = 3;
 						name = ligneContent[ligneContent.length - 3];
 						path = directory.equals("/") || directory.isEmpty()? "/" + name+"/": directory+ "/" + name +"/";
 						path = path.replace("//", "/");
 					}
 					// Other i.e. a file
 					else {
-						type = 0;
+						type = 1;
 					}
+					//log.info(name + " " + path + " " + type + " " + permissions);
 					adbexplorer.util.FileType adb = new FileType(name, path, type, permissions);
 					obj.add(adb);
 				}

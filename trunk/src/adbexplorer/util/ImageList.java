@@ -21,8 +21,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
  */
-
-
 package adbexplorer.util;
 
 public class ImageList
@@ -34,18 +32,45 @@ public class ImageList
 	private String workingDir;
 	private String path = "/images/";
 	
-	private ADBLogger log = new ADBLogger(ImageList.class);
+	Log4jInit log4jInit = new Log4jInit();
+	private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(ImageList.class);
+
+	private String images(int fileType) {
+		String retour = "";
+		switch(fileType) {
+			case -3:
+				retour = "dsymlink.gif";
+				break;
+			case -2:
+				retour = "ddirectory.gif";
+				break;
+			case -1:
+				retour = "dfile.gif";
+				break;
+			case 1:
+				retour = "file.gif";
+				break;
+			case 2:
+				retour = "directory.gif";
+				break;
+			case 3:
+				retour = "symlink.gif";
+				break;
+			default:
+					retour = "inconnu.gif";
+		}
+		return retour;
+	}
 	
 	public ImageList(ADBCommand adb, String workingDir) {
 		this.workingDir = workingDir;
 		this.adb = adb;
-		String [] imagesFile = {"file.gif", "directory.gif", "symlink.gif"}; // imagesFile[ligne.getType()]			
 		java.util.Vector<FileType> vft = adb.showDirectoryContent(this.workingDir);
 		
 		if(vft != null) {
 			for(adbexplorer.util.FileType line : vft) {
 				try {
-					listModel.addElement(new ListImageText(javax.imageio.ImageIO.read(getClass().getResource(path + imagesFile[line.getType()])), line));
+					listModel.addElement(new ListImageText(javax.imageio.ImageIO.read(getClass().getResource(path + images(line.getType()))), line));
 				}
 				catch (java.io.IOException e) {
 					log.error(e);
@@ -57,13 +82,12 @@ public class ImageList
 	public ImageList(LocalCommand lc, String workingDir) {
 		this.workingDir = workingDir;
 		this.lc = lc;
-		String [] imagesFile = {"file.gif", "directory.gif", "symlink.gif"}; // imagesFile[ligne.getType()]			
 		
 		java.util.Vector<adbexplorer.util.FileType> vft = lc.showDirectoryContent(this.workingDir);
 		if(vft != null) {
 			for(adbexplorer.util.FileType line : vft) {
 				try {
-					listModel.addElement(new ListImageText(javax.imageio.ImageIO.read(getClass().getResource(path + imagesFile[line.getType()])), line));
+					listModel.addElement(new ListImageText(javax.imageio.ImageIO.read(getClass().getResource(path + images(line.getType()))), line));
 				}
 				catch (java.io.IOException e) {
 					log.error(e);

@@ -26,7 +26,9 @@ package adbexplorer.util;
 
 public class TestBeforeStart {
 	
-	ADBLogger log = new ADBLogger(TestBeforeStart.class);
+	adbexplorer.util.Log4jInit log4jInit = new adbexplorer.util.Log4jInit();
+	private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(TestBeforeStart.class);
+
 	
 	public TestBeforeStart() {}
 	
