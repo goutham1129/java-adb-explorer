@@ -91,7 +91,6 @@ public class FileType {
 	}
 	
 	private String toNumericRepresentation(String permissions_s) {
-		System.out.println(permissions_s);
 		String user = toNumericRepresentationHelper(permissions_s.substring(0,3))==0?"0":""+toNumericRepresentationHelper(permissions_s.substring(0,3));
 		String group = toNumericRepresentationHelper(permissions_s.substring(3,6))==0?"0":""+toNumericRepresentationHelper(permissions_s.substring(3,6));
 		String other = toNumericRepresentationHelper(permissions_s.substring(6,9))==0?"0":""+toNumericRepresentationHelper(permissions_s.substring(6,9));
