@@ -82,9 +82,9 @@ public class TestBeforeStart {
 	public String errorToString(int errorCode) {
 		switch(errorCode) {
 			case -2: 
-				return ("Error : ADB don't run, please run it with root privilege.\nadb kill-server\nasudo adb start-server");
+				return ("Error : ADB don't run, please run it with root privilege.\nadb kill-server\nsudo adb start-server");
 			case -1: 
-				return ("Error : Run ADB Server with root privilege.\nadb kill-server\nasudo adb start-server");
+				return ("Error : Run ADB Server with root privilege.\nadb kill-server\nsudo adb start-server");
 			case 1: 
 				return ("Success : ADB run with correct privileges");
 			default:
