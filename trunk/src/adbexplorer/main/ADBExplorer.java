@@ -60,6 +60,7 @@ public class ADBExplorer extends javax.swing.JFrame {
 	private javax.swing.JMenu menuHelp;
 	private javax.swing.JMenuItem menuItemFileExit;
 	private javax.swing.JMenuItem menuItemHelpAbout;
+	private javax.swing.JMenuItem menuItemSave;
 	
 	/* Local list */
 	private javax.swing.JLabel labelLocal;
@@ -159,8 +160,10 @@ public class ADBExplorer extends javax.swing.JFrame {
 		menuBar = new javax.swing.JMenuBar();
 		menuFile = new javax.swing.JMenu();
 		menuItemFileExit = new javax.swing.JMenuItem();
+		menuItemSave = new javax.swing.JMenuItem();
 		menuHelp = new javax.swing.JMenu();
 		menuItemHelpAbout = new javax.swing.JMenuItem();
+		
 	}
 
 	/**
@@ -173,21 +176,43 @@ public class ADBExplorer extends javax.swing.JFrame {
 		
 		// File -> Exit
 		menuItemFileExit.setText("Exit");
-		menuFile.add(menuItemFileExit);
-		menuBar.add(menuFile);		
+		menuItemFileExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
 		menuItemFileExit.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				System.exit(0);
 			}
 		});
+		menuFile.add(menuItemFileExit);
 		
+		// File -> Save
+		menuItemSave.setText("Save Output");
+		menuItemSave.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+		menuItemSave.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				javax.swing.JFileChooser fc = new javax.swing.JFileChooser();
+				int returnVal = fc.showSaveDialog(ADBExplorer.this);
+        if (returnVal == javax.swing.JFileChooser.APPROVE_OPTION) {
+        	java.io.File file = fc.getSelectedFile();
+            try {
+            	java.io.BufferedWriter out = new java.io.BufferedWriter(new java.io.FileWriter(file.getAbsolutePath()));
+            	out.write(textAreaOutput.getText());
+            	out.close();
+            	refreshOutput("Saving output to " + file.getAbsolutePath() + "\n");
+            }
+            catch (Exception e) {
+            	refreshOutput(e.toString());
+						}
+        }
+			}
+		});
+    menuFile.add(menuItemSave);
+    
 		// ?
 		menuHelp.setText("?");
 		
 		// ? -> About
 		menuItemHelpAbout.setText("About");
-		menuHelp.add(menuItemHelpAbout);
-		menuBar.add(menuHelp);
+    menuItemHelpAbout.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
 		menuItemHelpAbout.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				javax.swing.JFrame frame = new javax.swing.JFrame("About Java ADB Explorer"); 
@@ -199,9 +224,13 @@ public class ADBExplorer extends javax.swing.JFrame {
 				frame.setVisible(true);
 			}
 		});
+		menuHelp.add(menuItemHelpAbout);
 		
+		// Add to menu bar
+		menuBar.add(menuFile);
+		menuBar.add(menuHelp);
 		
-		
+		// Set bar
 		setJMenuBar(menuBar);
 	}
 	
@@ -341,7 +370,7 @@ refreshRemoteList();
 				String input = javax.swing.JOptionPane.showInputDialog(null, "Name ? ");
 				if(input != null && !input.isEmpty()) {
 					String file = (remoteWorkingDir + "/" + input).replace("//", "/");
-					adb.exec("mkdir "+file);
+					refreshOutput(adb.exec("mkdir "+file));
 				}
 				refreshRemoteList();
 			}
@@ -352,7 +381,7 @@ refreshRemoteList();
 				String input = javax.swing.JOptionPane.showInputDialog(null, "Name ? ");
 				if(input != null && !input.isEmpty()) {
 					String file = (remoteWorkingDir + "/" + input).replace("//", "/");
-					adb.exec("echo > "+file);
+					refreshOutput(adb.exec("echo > "+file));
 					
 				}
 				refreshRemoteList();
@@ -383,14 +412,11 @@ refreshRemoteList();
 						String file = (remoteWorkingDir + "/" + obj).replace("//", "/");
 						if(confirm("Delete " + file) == 1) {
 							if(ft.getType() == 0)
-								if(adb.rm(file)) refreshOutput("File "+file+" deleted.");
-								else  refreshOutput("Delete file "+file+" failed.");
+								refreshOutput(adb.rm(file));
 							else if(ft.getType() == 1)
-								if(adb.rmdir(file)) refreshOutput("Directory "+file+" deleted.");
-								else  refreshOutput("Delete directory "+file+" failed.");
+								refreshOutput(adb.rmdir(file));
 							else if(ft.getType() == 2) 
-								if(adb.rm(file)) refreshOutput("Symbolic link "+file+" deleted.");
-								else  refreshOutput("Delete symbolic link "+file+" failed.");
+								refreshOutput(adb.rm(file));
 						}
 						refreshRemoteList();
 					}
@@ -424,7 +450,7 @@ refreshRemoteList();
 				for(Object obj : remoteList.getSelectedValues()) {
 					String file = (remoteWorkingDir + "/" + obj).replace("//", "/");
 					String filedest = (localWorkingDir + "/" + obj).replace("//", "/");
-					refreshOutput(adb.copyToRemote(file, filedest));
+					refreshOutput(adb.copyToLocal(file, filedest));
 				}
 				refreshLocalList();
 			}
@@ -440,14 +466,11 @@ refreshRemoteList();
 					String file = (remoteWorkingDir + "/" + obj).replace("//", "/");
 					if(confirm("Delete " + file) == 1) {
 						if(ft.getType() == 0)
-							if(adb.rm(file)) refreshOutput("File "+file+" deleted.");
-							else  refreshOutput("Delete file "+file+" failed.");
+							refreshOutput(adb.rm(file));
 						else if(ft.getType() == 1)
-							if(adb.rmdir(file)) refreshOutput("Directory "+file+" deleted.");
-							else  refreshOutput("Delete directory "+file+" failed.");
+							refreshOutput(adb.rmdir(file));
 						else if(ft.getType() == 2) 
-							if(adb.rm(file)) refreshOutput("Symbolic link "+file+" deleted.");
-							else  refreshOutput("Delete symbolic link "+file+" failed.");
+							refreshOutput(adb.rm(file));
 					}
 					refreshRemoteList();
 				}
@@ -461,8 +484,9 @@ refreshRemoteList();
 				for(Object obj : remoteList.getSelectedValues()) {
 					String input = javax.swing.JOptionPane.showInputDialog(null, "New name ? ");
 					String file = (remoteWorkingDir + "/" + obj).replace("//", "/");
+					String fileDest = (remoteWorkingDir + "/" + input).replace("//", "/");
 					if(input != null && !input.isEmpty()) {
-						if(adb.rename(file, remoteWorkingDir + "/" + input)) refreshOutput(file+" renamed.");
+						refreshOutput(adb.rename(file, fileDest));
 					}
 					refreshRemoteList();
 				}
@@ -479,7 +503,7 @@ refreshRemoteList();
 		sendExecuteCommand.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
 				if(!inputCommand.getText().isEmpty())
-					textAreaOutput.setText(adb.exec(inputCommand.getText()));
+					refreshOutput(adb.exec(inputCommand.getText()));
 			}
 		});
 		
@@ -487,7 +511,7 @@ refreshRemoteList();
 			public void keyPressed(java.awt.event.KeyEvent evt) {
 				if(evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
 					if(!inputCommand.getText().isEmpty())
-						textAreaOutput.setText(adb.exec(inputCommand.getText()));
+						refreshOutput(adb.exec(inputCommand.getText()));
 				}
 			}
 		});
@@ -525,122 +549,123 @@ refreshRemoteList();
 	 */
 	private void initGroupLayout() {
 		javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-		getContentPane().setLayout(layout);
-		layout.setHorizontalGroup(
-				layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(layout.createSequentialGroup()
-						.addContainerGap()
-						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-								.addGroup(layout.createSequentialGroup()
-										.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-												.addGroup(layout.createSequentialGroup()
-														.addGap(1, 1, 1)
-														.addComponent(labelLocal)
-														.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-														.addComponent(rootLocal)
-														.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-														.addComponent(backLocal)
-														.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-														.addComponent(localRefresh)
-														.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-														.addComponent(localNewDir)
-														.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-														.addComponent(localNewFile))
-														.addComponent(scrollPaneLocalList, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
-														.addComponent(localPathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-														.addGap(8, 8, 8)
-														.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-																.addComponent(deleteAdb, javax.swing.GroupLayout.DEFAULT_SIZE, 32, Short.MAX_VALUE)
-																.addComponent(adbToLocal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-																.addComponent(localToAdb, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-																.addComponent(localRename, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-																.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-																		.addComponent(scrollPaneRemoteList, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
-																		.addGroup(layout.createSequentialGroup()
-																				.addComponent(remotePathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
-																				.addGap(37, 37, 37))
-																				.addGroup(layout.createSequentialGroup()
-																						.addComponent(labelRemote)
-																						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																						.addComponent(rootRemote)
-																						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																						.addComponent(backRemote)
-																						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																						.addComponent(remoteRefresh)
-																						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																						.addComponent(remoteNewDir)
-																						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																						.addComponent(remoteNewFile))))
-																						.addGroup(layout.createSequentialGroup()
-																								.addComponent(labelDevice)
-																								.addGap(6, 6, 6)
-																								.addComponent(selectDevice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-																								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																								.addComponent(mountRW))
-																								.addGroup(layout.createSequentialGroup()
-																										.addComponent(labelExecuteCommand)
-																										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																										.addComponent(inputCommand, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
-																										.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																										.addComponent(sendExecuteCommand))
-																										.addComponent(labelOutput)
-																										.addComponent(scrollPaneTexteAreaOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 758, Short.MAX_VALUE))
-																										.addContainerGap())
-		);
-		layout.setVerticalGroup(
-				layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-				.addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-						.addContainerGap()
-						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-								.addComponent(selectDevice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-								.addComponent(labelDevice)
-								.addComponent(mountRW))
-								.addGap(6, 6, 6)
-								.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-										.addComponent(backLocal)
-										.addComponent(rootLocal)
-										.addComponent(labelLocal)
-										.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-												.addComponent(labelRemote)
-												.addComponent(rootRemote)
-												.addComponent(backRemote, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-												.addComponent(remoteRefresh)
-												.addComponent(remoteNewDir)
-												.addComponent(remoteNewFile))
-												.addComponent(localRefresh)
-												.addComponent(localNewDir)
-												.addComponent(localNewFile))
-												.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-												.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-														.addComponent(localPathLabel)
-														.addComponent(remotePathLabel))
-														.addGap(8, 8, 8)
-														.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-																.addGroup(layout.createSequentialGroup()
-																		.addComponent(localToAdb)
-																		.addGap(5, 5, 5)
-																		.addComponent(adbToLocal)
-																		.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																		.addComponent(deleteAdb)
-																		.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																		.addComponent(localRename))
-																		.addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-																				.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-																						.addComponent(scrollPaneRemoteList, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
-																						.addComponent(scrollPaneLocalList, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE))
-																						.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-																						.addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-																								.addComponent(labelExecuteCommand)
-																								.addComponent(inputCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-																								.addComponent(sendExecuteCommand))
-																								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																								.addComponent(labelOutput)
-																								.addGap(6, 6, 6)))
-																								.addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-																								.addComponent(scrollPaneTexteAreaOutput, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
-																								.addContainerGap())
-		);
+    getContentPane().setLayout(layout);
+    layout.setHorizontalGroup(
+        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addGroup(layout.createSequentialGroup()
+                            .addGap(1, 1, 1)
+                            .addComponent(labelLocal)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(rootLocal)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(backLocal)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(localRefresh)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(localNewDir)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(localNewFile))
+                        .addComponent(scrollPaneLocalList, javax.swing.GroupLayout.DEFAULT_SIZE, 359, Short.MAX_VALUE)
+                        .addComponent(localPathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGap(8, 8, 8)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(deleteAdb, javax.swing.GroupLayout.DEFAULT_SIZE, 32, Short.MAX_VALUE)
+                        .addComponent(adbToLocal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(localToAdb, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(localRename, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(scrollPaneRemoteList, javax.swing.GroupLayout.DEFAULT_SIZE, 347, Short.MAX_VALUE)
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(remotePathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 310, Short.MAX_VALUE)
+                            .addGap(37, 37, 37))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(labelRemote)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(rootRemote)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(backRemote)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(remoteRefresh)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(remoteNewDir)
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(remoteNewFile))))
+                .addGroup(layout.createSequentialGroup()
+                    .addComponent(labelDevice)
+                    .addGap(6, 6, 6)
+                    .addComponent(selectDevice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(mountRW))
+                .addGroup(layout.createSequentialGroup()
+                    .addComponent(labelExecuteCommand)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(inputCommand, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(sendExecuteCommand))
+                .addComponent(labelOutput)
+                .addComponent(scrollPaneTexteAreaOutput, javax.swing.GroupLayout.DEFAULT_SIZE, 758, Short.MAX_VALUE))
+            .addContainerGap())
+    );
+    layout.setVerticalGroup(
+        layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(selectDevice, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(labelDevice)
+                .addComponent(mountRW))
+            .addGap(6, 6, 6)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(labelRemote)
+                    .addComponent(rootRemote)
+                    .addComponent(backRemote, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(remoteRefresh)
+                    .addComponent(remoteNewDir)
+                    .addComponent(remoteNewFile))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(backLocal)
+                    .addComponent(rootLocal)
+                    .addComponent(labelLocal)
+                    .addComponent(localRefresh)
+                    .addComponent(localNewDir)
+                    .addComponent(localNewFile)))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(localPathLabel)
+                .addComponent(remotePathLabel))
+            .addGap(8, 8, 8)
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addComponent(localToAdb)
+                    .addGap(5, 5, 5)
+                    .addComponent(adbToLocal)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(deleteAdb)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(localRename))
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(scrollPaneRemoteList, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE)
+                        .addComponent(scrollPaneLocalList, javax.swing.GroupLayout.DEFAULT_SIZE, 443, Short.MAX_VALUE))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(labelExecuteCommand)
+                        .addComponent(inputCommand, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(sendExecuteCommand))
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(labelOutput)
+                    .addGap(6, 6, 6)))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(scrollPaneTexteAreaOutput, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addContainerGap())
+    );
 		
 	}
 	
@@ -649,7 +674,10 @@ refreshRemoteList();
 	 * @param message message to show in the output
 	 */
 	private void refreshOutput(String message) {
-		textAreaOutput.setText(textAreaOutput.getText() + "\n" + message);
+		if(textAreaOutput.getText().isEmpty())
+			textAreaOutput.setText(message);
+		else
+			textAreaOutput.setText((textAreaOutput.getText() + "\n" + message).replace("\n\n", "\n"));
 	}
 	
 	/**

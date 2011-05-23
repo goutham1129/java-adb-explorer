@@ -61,74 +61,72 @@ public class ADBCommand {
 	 * @return the return of the command
 	 */
 	public String exec(String command) {
+		String retour="";
 		try {
 			Process p = runtime.exec("adb -s "+device+" shell "+command);
 			log.info("adb -s "+device+" shell "+command);
 			
-			java.io.DataInputStream in = new java.io.DataInputStream(p.getInputStream());
-			
-			byte[] buf = new byte[1024];
-			int len = in.read(buf);
-			if(len > 0)
-				return new String(buf,0,len);
+			java.io.BufferedReader standardIn = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream())); 
+			java.io.BufferedReader errorIn = new java.io.BufferedReader(new java.io.InputStreamReader(p.getErrorStream())); 
+			String line="";
+			while((line=standardIn.readLine()) != null) {
+				retour += line+"\n";
+			}
+			while((line=errorIn.readLine()) != null) {
+				retour += line+"\n";
+			}
 		}
 		catch (java.io.IOException e) { log.error(e); }
 		
-		return "";
+		return retour;
 	}
 	
 	public String customExec(String cmd) {
+		String retour="";
 		try {
 			cmd = "adb -s " + device + " " + cmd;
 			Process p = runtime.exec(cmd);
-			log.info(cmd);
-			//java.io.DataInputStream in = new java.io.DataInputStream(p.getInputStream());
-			// If data received, return false because a success return nothing
+			log.info("adb -s "+device+" shell "+cmd);
 			
-			java.io.BufferedReader in = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream())); 
-			String line = "";
-			
-			while((line = in.readLine()) != null) {
-				System.out.println(line);
+			java.io.BufferedReader standardIn = new java.io.BufferedReader(new java.io.InputStreamReader(p.getInputStream())); 
+			java.io.BufferedReader errorIn = new java.io.BufferedReader(new java.io.InputStreamReader(p.getErrorStream())); 
+			String line="";
+			while((line=standardIn.readLine()) != null) {
+				retour += line+"\n";
 			}
-			/*
-			byte[] buf = new byte[1024];
-			int len = in.read(buf);
-			log.info("Size "+len);
-			if(len > 0) return new String(buf, 0, len);*/
-			
+			while((line=errorIn.readLine()) != null) { // When success ADB return success state to std.err !
+				retour += line+"\n";
+				System.err.println(line);
+			}
 		}
-		catch (java.io.IOException e) { 
-			log.error(e);
-		}	
-		return "";
+		catch (java.io.IOException e) { log.error(e); }
+		
+		return retour;
 	}
+	
 	public String copyToLocal(String src, String dest) {
 		String cmd = "pull "+src + " " + dest+"";
-		return customExec(cmd);
+		return "Copy to Local from "+src+" to "+dest+" "+customExec(cmd);
 	}
 	
 	public String copyToRemote(String src, String dest) {
 		String cmd = "push "+src + " " + dest;
-		return customExec(cmd);
+		return "Copy to Remote from "+src+" to "+dest+" "+customExec(cmd);
 	}
 	
-	public boolean rename(String oldName, String newName) {
+	public String rename(String oldName, String newName) {
 		String cmd = "shell mv "+oldName + " " + newName;
-		if(!customExec(cmd).isEmpty()) return true;
-		else return false;
+		return "Rename "+oldName+" to "+newName+" "+customExec(cmd);
 	}
 	
-	public boolean rm(String file) {
+	public String rm(String file) {
 		String cmd = "shell rm "+file;
-		if(!customExec(cmd).isEmpty()) return true;
-		else return false;
+		return "Remove "+file+" "+customExec(cmd);
 	}
 	
-	public boolean rmdir(String file) {
+	public String rmdir(String file) {
 		String cmd = "shell rmdir "+file;
-		if(!customExec(cmd).isEmpty()) return true;
-		else return false;
+		return "Remove directory "+file+" "+customExec(cmd);
 	}
 	
 	public java.util.Vector<adbexplorer.util.FileType> showDirectoryContent(String directory) {
