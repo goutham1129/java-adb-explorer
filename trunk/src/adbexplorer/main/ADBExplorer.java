@@ -100,6 +100,8 @@ public class ADBExplorer extends javax.swing.JFrame {
 			initGroupLayout();
 			pack();
 		}
+		else
+			System.exit(EXIT_ON_CLOSE);
 	}
 	
 	/**
@@ -179,7 +181,7 @@ public class ADBExplorer extends javax.swing.JFrame {
 		menuItemFileExit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
 		menuItemFileExit.addActionListener(new java.awt.event.ActionListener() {
 			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				System.exit(0);
+				System.exit(EXIT_ON_CLOSE);
 			}
 		});
 		menuFile.add(menuItemFileExit);
